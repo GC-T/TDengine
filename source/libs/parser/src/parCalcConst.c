@@ -284,6 +284,12 @@ static int32_t calcConstSelectWithoutFrom(SCalcConstContext* pCxt, SSelectStmt* 
 
 static int32_t calcConstSelectFrom(SCalcConstContext* pCxt, SSelectStmt* pSelect, bool subquery) {
   int32_t code = calcConstFromTable(pCxt, pSelect->pFromTable);
+  if (QUERY_NODE_TEMP_TABLE == nodeType(pSelect->pFromTable) &&
+      ((STempTableNode*)pSelect->pFromTable)->pSubquery != NULL &&
+      QUERY_NODE_SELECT_STMT == nodeType(((STempTableNode*)pSelect->pFromTable)->pSubquery) &&
+      ((SSelectStmt*)((STempTableNode*)pSelect->pFromTable)->pSubquery)->isEmptyResult){
+    pSelect->isEmptyResult = true;
+  }
   if (TSDB_CODE_SUCCESS == code) {
     code = calcConstProjections(pCxt, pSelect, subquery);
   }
